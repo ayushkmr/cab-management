@@ -1,0 +1,27 @@
+{
+    "cities": [
+        {"cityId": 1, "name": "New York"},
+        {"cityId": 2, "name": "Los Angeles"},
+        {"cityId": 3, "name": "Chicago"},
+        {"cityId": 4, "name": "Houston"},
+        {"cityId": 5, "name": "Phoenix"}
+    ],
+    "cabs": [
+        {"cabId": 101, "cabState": "IDLE", "cityId": 1},
+        {"cabId": 102, "cabState": "ON_TRIP", "cityId": 1},
+        {"cabId": 103, "cabState": "IDLE", "cityId": 2},
+        {"cabId": 104, "cabState": "ON_TRIP", "cityId": 2},
+        {"cabId": 105, "cabState": "IDLE", "cityId": 3},
+        {"cabId": 106, "cabState": "IDLE", "cityId": 3},
+        {"cabId": 107, "cabState": "ON_TRIP", "cityId": 4},
+        {"cabId": 108, "cabState": "IDLE", "cityId": 4},
+        {"cabId": 109, "cabState": "IDLE", "cityId": 5},
+        {"cabId": 110, "cabState": "ON_TRIP", "cityId": 5}
+    ],
+    "bookings": [
+        {"bookingId": 1, "cabId": 102, "cityId": 1, "timestamp": "2024-07-27T10:00:00"},
+        {"bookingId": 2, "cabId": 104, "cityId": 2, "timestamp": "2024-07-27T11:00:00"},
+        {"bookingId": 3, "cabId": 107, "cityId": 4, "timestamp": "2024-07-27T12:00:00"},
+        {"bookingId": 4, "cabId": 110, "cityId": 5, "timestamp": "2024-07-27T13:00:00"}
+    ]
+}

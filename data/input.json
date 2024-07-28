@@ -1,0 +1,21 @@
+{
+    "cities": [
+        {"cityId": 1, "name": "New York"},
+        {"cityId": 2, "name": "Los Angeles"},
+        {"cityId": 3, "name": "Chicago"},
+        {"cityId": 4, "name": "Houston"},
+        {"cityId": 5, "name": "Phoenix"}
+    ],
+    "cabs": [
+        {"cabId": 101, "cabState": "IDLE", "cityId": 1},
+        {"cabId": 102, "cabState": "ON_TRIP", "cityId": 1},
+        {"cabId": 103, "cabState": "IDLE", "cityId": 2},
+        {"cabId": 104, "cabState": "ON_TRIP", "cityId": 2},
+        {"cabId": 105, "cabState": "IDLE", "cityId": 3},
+        {"cabId": 106, "cabState": "IDLE", "cityId": 3},
+        {"cabId": 107, "cabState": "ON_TRIP", "cityId": 4},
+        {"cabId": 108, "cabState": "IDLE", "cityId": 4},
+        {"cabId": 109, "cabState": "IDLE", "cityId": 5},
+        {"cabId": 110, "cabState": "ON_TRIP", "cityId": 5}
+    ]
+}
