@@ -53,7 +53,7 @@ def load_initial_data(file_path=None):
             city_id = booking['cityId']
             start_time = booking['start_time']
             end_time = booking.get('end_time', None)
-            add_old_booking(cab_id, city_id, start_time, end_time)
+            add_old_booking(booking_manager, cab_manager, city_manager, cab_id, city_id, start_time, end_time)
             logger.info(f"Booking added for cab {cab_id} in city {city_id} from {start_time} to {end_time}.")
 
         logger.info("All initial data processed successfully.")
@@ -75,7 +75,7 @@ def add_booking(city_id, start_time=None):
     booking_id = booking_manager.bookCab(cab_manager.cabs, city_id, start_time)
     
     if booking_id is not None:
-        booking = next((b for b in booking_manager.getAllBookings() if b.bookingId == booking_id), None)
+        booking = booking_manager.bookings.get(booking_id)
         logger.info(f"Booking {booking.bookingId} added for cab {booking.cab.cabId} in city {city_id} at {booking.start_time}")
     else:
         logger.warning(f"No cabs available for booking in city {city_id}")
@@ -96,27 +96,26 @@ def end_trip_with_timestamp(booking_id, end_time=None):
     except ValueError as e:
         logger.error(e)
 
-def add_old_booking(cab_id, city_id, start_time, end_time=None):
+def add_old_booking(booking_manager, cab_manager, city_manager, cab_id, city_id, start_time, end_time=None):
     """
     Add an old booking to the booking list, either completed or ongoing.
     
     Args:
+        booking_manager (BookingManager): The BookingManager instance.
+        cab_manager (CabManager): The CabManager instance.
+        city_manager (CityManager): The CityManager instance.
         cab_id (int): The ID of the cab.
         city_id (int): The ID of the city.
         start_time (str): The start time of the booking.
         end_time (str, optional): The end time of the booking. If None, the booking is considered ongoing.
     """
-    booking_manager = BookingManager.getInstance()
-    cab_manager = CabManager.getInstance()
-    city_manager = CityManager.getInstance()
-
     cab = cab_manager.getCab(cab_id)
     city = city_manager.getCity(city_id)
 
     if cab and city:
         state = BookingState.COMPLETED if end_time else BookingState.TRIP_STARTED
         booking = Booking(cab, city, state=state, start_time=start_time, end_time=end_time)
-        booking_manager.bookings.append(booking)
+        booking_manager.addBooking(booking)
         cab.setState("IDLE" if state == BookingState.COMPLETED else "ON_TRIP")
         logger.info(f"Old booking {booking.bookingId} added for cab {cab_id} in city {city_id} from {start_time} to {end_time if end_time else 'ongoing'}")
     else:

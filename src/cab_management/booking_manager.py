@@ -24,7 +24,7 @@ class BookingManager:
             raise Exception("This class is a singleton!")
         else:
             BookingManager._instance = self
-            self.bookings = []  # List to hold booking data
+            self.bookings = {}  # Dictionary to hold booking data, booking id -> booking object
             logger.info("BookingManager instance created")
 
     @staticmethod
@@ -39,6 +39,7 @@ class BookingManager:
             BookingManager()
             logger.info("BookingManager instance created")
         return BookingManager._instance
+    
     @staticmethod
     def findBestCab(cabs, city):
         """
@@ -62,6 +63,16 @@ class BookingManager:
             selected_cab.setState("ON_TRIP")
             logger.info(f"Selected cab {selected_cab.cabId} for booking in city {city}")
         return selected_cab
+    def addBooking(self, booking):
+        """
+        Add a booking to the bookings dictionary.
+        
+        Args:
+            booking (Booking): The booking object to be added.
+        """
+        logger.info(f"Booking {booking.bookingId} added for cab {booking.cab.cabId} in city {booking.city.cityId} at {booking.start_time}")
+        self.bookings[booking.bookingId] = booking
+        
 
     def getAllBookings(self):
         """
@@ -71,7 +82,7 @@ class BookingManager:
             list: List of all bookings.
         """
         logger.info("Fetching all bookings")
-        return self.bookings
+        return list(self.bookings.values())
     
     def endBooking(self, booking_id, end_time=None):
         """
@@ -121,7 +132,7 @@ class BookingManager:
             
             # Step 3: Create a booking for the cab
             booking = Booking(best_cab, city, start_time=start_time)
-            self.bookings.append(booking)
+            self.bookings[booking.bookingId] = booking
             logger.info(f"Booking created with ID {booking.bookingId} for cab {best_cab.cabId}")
             
             # Step 4: Change the state to WAITING_FOR_CUSTOMER

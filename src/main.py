@@ -82,7 +82,7 @@ def book_cab(booking_manager, city_id):
     """
     booking_id = booking_manager.bookCab(CabManager.getInstance().cabs, city_id)
     if booking_id:
-        booking = next((b for b in booking_manager.getAllBookings() if b.bookingId == booking_id), None)
+        booking = booking_manager.bookings.get(booking_id)
         logger.info(f"Booking {booking.bookingId} added for cab {booking.cab.cabId} in city {city_id} at {booking.start_time}")
     else:
         logger.warning("No cabs available.")
