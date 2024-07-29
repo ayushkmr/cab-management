@@ -39,7 +39,6 @@ class BookingManager:
             BookingManager()
             logger.info("BookingManager instance created")
         return BookingManager._instance
-
     @staticmethod
     def findBestCab(cabs, city):
         """
@@ -53,7 +52,7 @@ class BookingManager:
             Cab: The best available cab object, or None if no cabs are available.
         """
         logger.info(f"Finding best cab in city {city}")
-        idleCabs = [cab for cab in cabs.values() if cab.getLocation() == city and cab.getState().__class__.__name__ == "IdleState"]
+        idleCabs = [cab for cab in cabs.values() if cab.getCity() == city and cab.getState().__class__.__name__ == "IdleState"]
         if not idleCabs:
             logger.warning(f"No idle cabs available in city {city}")
             return None
