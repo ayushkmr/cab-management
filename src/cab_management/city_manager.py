@@ -54,3 +54,12 @@ class CityManager:
             City: The city object corresponding to the cityId.
         """
         return self.cities.get(cityId)
+    
+    def getAllCities(self):
+        """
+        Get all cities.
+        
+        Returns:
+            list: List of all city objects.
+        """
+        return list(self.cities.values())

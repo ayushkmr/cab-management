@@ -5,6 +5,7 @@ Cab Module
 from datetime import datetime
 import logging
 from .state_manager import StateManager
+from .city import City
 
 class Cab:
     """
@@ -12,16 +13,16 @@ class Cab:
     
     Attributes:
         cabId (int): Unique identifier for the cab.
-        location (str): Current location of the cab.
+        cityId (int): Current city ID of the cab.
         state (State): Current state of the cab.
         history (list): List of tuples containing the timestamp and state.
     """
-    def __init__(self, cabId, location):
+    def __init__(self, cabId, cityId):
         self.cabId = cabId
-        self.location = location
+        self.cityId = cityId
         self.state = StateManager.getState("IDLE")
         self.history = [(datetime.now(), self.state)]
-        logging.info(f"Cab {self.cabId} initialized at location {self.location} with state {self.state.__class__.__name__}")
+        logging.info(f"Cab {self.cabId} initialized in city ID {self.cityId} with state {self.state.__class__.__name__}")
 
     def setState(self, state):
         """
@@ -34,15 +35,15 @@ class Cab:
         self.history.append((datetime.now(), self.state))
         logging.info(f"Cab {self.cabId} state changed to {self.state.__class__.__name__}")
 
-    def setLocation(self, location):
+    def setCity(self, cityId):
         """
-        Set the location of the cab.
+        Set the city ID of the cab.
         
         Args:
-            location (str): The new location of the cab.
+            cityId (int): The new city ID of the cab.
         """
-        self.location = location
-        logging.info(f"Cab {self.cabId} location changed to {self.location}")
+        self.cityId = cityId
+        logging.info(f"Cab {self.cabId} city ID changed to {self.cityId}")
 
     def getState(self):
         """
@@ -53,14 +54,14 @@ class Cab:
         """
         return self.state
 
-    def getLocation(self):
+    def getCity(self):
         """
-        Get the current location of the cab.
+        Get the current city ID of the cab.
         
         Returns:
-            str: The current location of the cab.
+            int: The current city ID of the cab.
         """
-        return self.location
+        return self.cityId
 
     def getHistory(self):
         """

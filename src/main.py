@@ -26,7 +26,8 @@ def display_menu():
     print("3. Update a cab")
     print("4. Book a cab")
     print("5. Show analytics")
-    print("6. Exit")
+    print("6. End trip")
+    print("7. Exit")
     print("**********************************")
 
 def load_data(file_path):
@@ -68,34 +69,50 @@ def update_cabs(cab_manager, cab_id, state, city_id=None):
     cab_manager.updateCab(cab_id, state, city_id)
     logger.info(f"Updated cab {cab_id} to state {state} in city {city_id if city_id else 'N/A'}")
 
-def book_cab(cab_manager, city_id):
+def book_cab(booking_manager, city_id):
     """
     Book a cab in a specified city.
     
     Args:
-        cab_manager (CabManager): The CabManager instance.
+        booking_manager (BookingManager): The BookingManager instance.
         city_id (int): The ID of the city to book a cab in.
     
     Returns:
-        Cab: The booked cab if available; otherwise, None.
+        Booking: The booking if available; otherwise, None.
     """
-    booked_cab = cab_manager.bookCab(city_id)
-    if booked_cab:
-        logger.info(f"Cab {booked_cab.cabId} booked successfully.")
+    booking_id = booking_manager.bookCab(CabManager.getInstance().cabs, city_id)
+    if booking_id:
+        booking = next((b for b in booking_manager.getAllBookings() if b.bookingId == booking_id), None)
+        logger.info(f"Booking {booking.bookingId} added for cab {booking.cab.cabId} in city {city_id} at {booking.start_time}")
     else:
         logger.warning("No cabs available.")
-    return booked_cab
+    return booking
 
-def show_analytics(cab_manager):
+def end_trip(booking_manager, booking_id):
+    """
+    End a trip and make the cab available.
+    
+    Args:
+        booking_manager (BookingManager): The BookingManager instance.
+        booking_id (int): The ID of the booking to end.
+    """
+    try:
+        booking_manager.endBooking(booking_id)
+        logger.info(f"Ended trip for booking ID {booking_id}")
+    except ValueError as e:
+        logger.error(e)
+
+def show_analytics(cab_manager, city_manager):
     """
     Show analytics for cabs.
     
     Args:
         cab_manager (CabManager): The CabManager instance.
+        city_manager (CityManager): The CityManager instance.
     """
     cabs = cab_manager.cabs.values()
     for cab in cabs:
-        idle_time = Analytics.calculateIdleTime(cab, None, datetime.now())
+        idle_time = Analytics.calculateIdleTime(cab, datetime.min, datetime.now())
         logger.info(f"Cab {cab.cabId} idle time: {idle_time}")
         history = Analytics.getCabHistory(cab)
         logger.info(f"Cab {cab.cabId} history: {history}")
@@ -104,6 +121,13 @@ def show_analytics(cab_manager):
     bookings = cab_manager.getAllBookings()
     high_demand_city, peak_time = Analytics.highDemandCities(bookings)
     logger.info(f"High demand city: {high_demand_city}, Peak time: {peak_time}")
+
+    # Show available cabs in each city
+    cities = city_manager.getAllCities()
+    for city in cities:
+        idle_cabs = [cab for cab in cabs if cab.cityId == city.cityId and cab.state == "IDLE"]
+        on_trip_cabs = [cab for cab in cabs if cab.cityId == city.cityId and cab.state == "ON_TRIP"]
+        logger.info(f"City: {city.name}, Idle Cabs: {len(idle_cabs)}, On Trip Cabs: {len(on_trip_cabs)}")
 
 def main():
     """
@@ -115,7 +139,7 @@ def main():
 
     while True:
         display_menu()
-        choice = input("Select an option (1-6): ").strip()
+        choice = input("Select an option (1-7): ").strip()
 
         if choice == '1':
             file_path = input("Enter the path to the JSON file with initial data: ").strip()
@@ -137,12 +161,16 @@ def main():
 
         elif choice == '4':
             city_id = int(input("Enter the city ID where you want to book a cab: ").strip())
-            book_cab(cab_manager, city_id)
+            book_cab(booking_manager, city_id)
 
         elif choice == '5':
-            show_analytics(cab_manager)
+            show_analytics(cab_manager, city_manager)
 
         elif choice == '6':
+            booking_id = int(input("Enter the booking ID to end the trip: ").strip())
+            end_trip(booking_manager, booking_id)
+
+        elif choice == '7':
             logger.info("Exiting the program.")
             break
 

@@ -2,17 +2,7 @@
 State Manager Module
 """
 
-class State:
-    """Base class for all states"""
-    pass
-
-class IdleState(State):
-    """Represents the idle state"""
-    pass
-
-class OnTripState(State):
-    """Represents the on-trip state"""
-    pass
+from .state import State, IdleState, ReservedState, OnTripState
 
 class StateManager:
     """
@@ -32,6 +22,8 @@ class StateManager:
         """
         if stateName == "IDLE":
             return IdleState()
+        elif stateName == "RESERVED":
+            return ReservedState()
         elif stateName == "ON_TRIP":
             return OnTripState()
         else:
