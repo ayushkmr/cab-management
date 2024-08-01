@@ -38,12 +38,15 @@ class Cab:
             state (Union[CabState, str]): The new state of the cab, can be a CabState or a string.
             timestamp (datetime, optional): The timestamp to record. If None, the current time will be used.
         """
+        logging.debug(f"Attempting to set state for cab {self.cabId} to {state}")
         if isinstance(state, str):
             try:
                 state = CabState[state]  # Convert string to CabState
             except KeyError:
+                logging.error(f"Invalid state string: {state}")
                 raise ValueError(f"Invalid state string: {state}")
         elif not isinstance(state, CabState):
+            logging.error(f"Invalid state: {state}")
             raise ValueError(f"Invalid state: {state}")
         
         if self.state != state:  # Only change state if it's different
@@ -51,7 +54,7 @@ class Cab:
             if timestamp is None:
                 timestamp = datetime.now()  # Use current time if no timestamp is provided
             self.history.append((timestamp, self.state))
-            logging.info(f"Cab {self.cabId} state changed to {self.state}")
+            logging.info(f"Cab {self.cabId} state changed to {self.state} at {timestamp}")
 
     def setCity(self, cityId):
         """
@@ -60,6 +63,7 @@ class Cab:
         Args:
             cityId (int): The new city ID of the cab.
         """
+        logging.debug(f"Changing city ID for cab {self.cabId} to {cityId}")
         self.cityId = cityId
         logging.info(f"Cab {self.cabId} city ID changed to {self.cityId}")
 
@@ -70,6 +74,7 @@ class Cab:
         Returns:
             CabState: The current state of the cab.
         """
+        logging.debug(f"Getting state for cab {self.cabId}: {self.state}")
         return self.state
 
     def getCity(self):
@@ -79,6 +84,7 @@ class Cab:
         Returns:
             int: The current city ID of the cab.
         """
+        logging.debug(f"Getting city ID for cab {self.cabId}: {self.cityId}")
         return self.cityId
 
     def getHistory(self):
@@ -88,6 +94,7 @@ class Cab:
         Returns:
             list: List of tuples containing the timestamp and state.
         """
+        logging.debug(f"Getting history for cab {self.cabId}")
         return self.history
 
     def addBooking(self, bookingId):
@@ -107,6 +114,7 @@ class Cab:
         Returns:
             list: List of booking IDs.
         """
+        logging.debug(f"Getting bookings for cab {self.cabId}: {self.bookings}")
         return self.bookings
 
     def getIdleTime(self):
@@ -120,6 +128,7 @@ class Cab:
         current_time = datetime.now()
         previous_time = self.history[0][0]
 
+        logging.debug(f"Calculating idle time for cab {self.cabId}")
         for timestamp, state in self.history:
             if state == CabState.IDLE:
                 total_idle_time += timestamp - previous_time
@@ -128,4 +137,6 @@ class Cab:
         if self.state == CabState.IDLE:
             total_idle_time += current_time - previous_time
         
-        return int(total_idle_time.total_seconds())
+        idle_time_seconds = int(total_idle_time.total_seconds())
+        logging.info(f"Total idle time for cab {self.cabId}: {idle_time_seconds} seconds")
+        return idle_time_seconds

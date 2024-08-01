@@ -2,8 +2,9 @@
 Analytics Module
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
+from .cab import Cab, CabState
 
 logger = logging.getLogger('cab_management.analytics')
 
@@ -32,28 +33,40 @@ class Analytics:
             end_time = datetime.now()
             logger.warning("End time is None, setting it to datetime.now()")
 
-        total_idle_time = 0
+        total_idle_time = timedelta(0)
+        current_time = datetime.now()
+        previous_time = start_time
+
+        logger.debug(f"Calculating idle time for cab {cab.cabId}")
         for time, state in cab.getHistory():
-            if state.__class__.__name__ == "IdleState":
-                if start_time <= time <= end_time:
-                    total_idle_time += (end_time - time).total_seconds() / 3600.0
-        logger.info(f"Calculated idle time for cab {cab.cabId}: {total_idle_time} hours")
-        return total_idle_time
+            if state == CabState.IDLE:
+                if previous_time < time <= end_time:
+                    total_idle_time += time - previous_time
+                previous_time = time
+        
+        if previous_time < end_time and cab.getState() == CabState.IDLE:
+            total_idle_time += end_time - previous_time
+        
+        idle_time_hours = total_idle_time.total_seconds() / 3600.0
+        logger.info(f"Calculated idle time for cab {cab.cabId}: {idle_time_hours} hours")
+        return idle_time_hours
 
     @staticmethod
     def getCabHistory(cab):
         """
-        Get the history of states for a cab.
+        Get the history of states for a cab and its bookings.
         
         Args:
             cab (Cab): The cab whose history is to be retrieved.
         
         Returns:
-            list: The history of states for the cab.
+            tuple: The history of states for the cab and the list of bookings.
         """
         history = cab.getHistory()
+        bookings = cab.getBookings()
         logger.info(f"Retrieved history for cab {cab.cabId}: {history}")
-        return history
+        logger.info(f"Bookings for cab {cab.cabId}: {bookings}")
+        return history, bookings
 
     @staticmethod
     def highDemandCities(bookings):

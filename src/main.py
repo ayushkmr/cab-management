@@ -25,9 +25,55 @@ def display_menu():
     print("2. Cab Management")
     print("3. Booking Management")
     print("4. City Management")
-    print("5. Show Analytics")
+    print("5. Analytics Menu")
     print("6. Exit")
     print("**********************************")
+
+def analytics_menu(cab_manager):
+    """
+    Display the analytics menu options to the user.
+    """
+    while True:
+        print("\n*** Analytics Menu ***")
+        print("1. Show cab idle time in a given duration")
+        print("2. Show cab history")
+        print("3. Show high demand cities and peak times")
+        print("4. Back to main menu")
+        choice = input("Select an option (1-4): ").strip()
+
+        try:
+            if choice == '1':
+                cab_id = int(input("Enter the cab ID to check idle time: ").strip())
+                start_time = datetime.fromisoformat(input("Enter the start time (YYYY-MM-DD HH:MM:SS): ").strip())
+                end_time = datetime.fromisoformat(input("Enter the end time (YYYY-MM-DD HH:MM:SS): ").strip())
+                cab = cab_manager.getCab(cab_id)
+                if cab:
+                    idle_time = Analytics.calculateIdleTime(cab, start_time, end_time)
+                    logger.info(f"Cab {cab_id} idle time between {start_time} and {end_time}: {idle_time} hours")
+                else:
+                    logger.warning(f"Cab {cab_id} not found.")
+
+            elif choice == '2':
+                cab_id = int(input("Enter the cab ID to show history: ").strip())
+                cab = cab_manager.getCab(cab_id)
+                if cab:
+                    history = Analytics.getCabHistory(cab)
+                    logger.info(f"Cab {cab_id} history: {history}")
+                else:
+                    logger.warning(f"Cab {cab_id} not found.")
+
+            elif choice == '3':
+                bookings = cab_manager.getAllBookings()
+                high_demand_city, peak_time = Analytics.highDemandCities(bookings)
+                logger.info(f"High demand city: {high_demand_city}, Peak time: {peak_time}")
+
+            elif choice == '4':
+                break
+
+            else:
+                logger.warning("Invalid option selected. Please try again.")
+        except Exception as e:
+            logger.error(f"Error in analytics menu: {e}")
 
 def cab_management_menu():
     """
@@ -349,7 +395,7 @@ def main():
                     city_management_menu(city_manager)
 
                 elif choice == '5':
-                    show_analytics(cab_manager, city_manager)
+                    analytics_menu(cab_manager)
 
                 elif choice == '6':
                     logger.info("Exiting the program.")
