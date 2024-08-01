@@ -119,9 +119,10 @@ class BookingManager:
             booking.change_state(BookingState.COMPLETED)
             booking.end_time = end_time if end_time else datetime.now()
             logger.info(f"Booking with ID {booking_id} ended at {booking.end_time} and cab {cab.cabId} set to IDLE")
+            return True  # Return True for successful operation
         else:
             logger.error(f"Booking ID {booking_id} not found.")
-            raise ValueError(f"Booking ID {booking_id} not found.")
+            return False  # Return False if booking ID is not found
 
     def bookCab(self, city, start_time=None):
         """

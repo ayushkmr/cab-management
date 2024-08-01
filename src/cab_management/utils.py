@@ -70,16 +70,17 @@ def add_booking(city_id, start_time=None):
         start_time (str, optional): The start time of the booking. If None, current time will be used.
     """
     booking_manager = BookingManager.getInstance()
-    cab_manager = CabManager.getInstance()
     
     # Book a cab in the specified city with the given start time
-    booking_id = booking_manager.bookCab(cab_manager.cabs, city_id, start_time)
+    booking_id = booking_manager.bookCab(city_id, start_time)
     
     if booking_id is not None:
         booking = booking_manager.bookings.get(booking_id)
         logger.info(f"Booking {booking.bookingId} added for cab {booking.cab.cabId} in city {city_id} at {booking.start_time}")
     else:
         logger.warning(f"No cabs available for booking in city {city_id}")
+        
+    return booking_id
 
 def end_trip_with_timestamp(booking_id, end_time=None):
     """
@@ -94,8 +95,10 @@ def end_trip_with_timestamp(booking_id, end_time=None):
     try:
         booking_manager.endBooking(booking_id, end_time)
         logger.info(f"Booking with ID {booking_id} ended at {end_time if end_time else datetime.datetime.now()}")
+        return True
     except ValueError as e:
         logger.error(e)
+        return False
 
 def add_old_booking(booking_manager, cab_manager, city_manager, cab_id, city_id, start_time, end_time=None):
     """
