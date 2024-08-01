@@ -45,9 +45,10 @@ class Cab:
         elif not isinstance(state, CabState):
             raise ValueError(f"Invalid state: {state}")
         
-        self.state = state
-        self.history.append((datetime.now(), self.state))
-        logging.info(f"Cab {self.cabId} state changed to {self.state}")
+        if self.state != state:  # Only change state if it's different
+            self.state = state
+            self.history.append((datetime.now(), self.state))
+            logging.info(f"Cab {self.cabId} state changed to {self.state}")
 
     def setCity(self, cityId):
         """
