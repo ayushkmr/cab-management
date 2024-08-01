@@ -43,8 +43,8 @@ class TestAnalytics(unittest.TestCase):
     def test_getCabHistory(self):
         """Test the getCabHistory method."""
         history, bookings = Analytics.getCabHistory(self.cab)
-        self.assertGreater(len(history), 0)  # Ensure there is some history
-        self.assertEqual(len(bookings), 0)  # No bookings added yet
+        self.assertGreater(len(history), 1)
+        self.assertEqual(len(bookings), 1)
 
     def test_highDemandCities(self):
         """Test the highDemandCities method."""
