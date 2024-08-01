@@ -6,6 +6,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Virtual environment
+ola/**
+
 # If using Jupyter notebooks
 .ipynb_checkpoints
 
