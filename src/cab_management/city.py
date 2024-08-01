@@ -1,6 +1,7 @@
 """
 City Module
 """
+from .cab import CabState
 
 class City:
     """
@@ -49,9 +50,11 @@ class City:
         Get all cabs in the city with a given state.
         
         Args:
-            state (CabState): The state to filter cabs by.
+            state (Union[str, CabState]): The state to filter cabs by, can be a string or a CabState.
         
         Returns:
             list: List of cab objects with the given state.
         """
+        if isinstance(state, str):
+            state = CabState[state]
         return [cab for cab in self.cabs.values() if cab.getState() == state]

@@ -24,8 +24,9 @@ def display_menu():
     print("1. Load initial data from JSON")
     print("2. Cab Management")
     print("3. Booking Management")
-    print("4. Show Analytics")
-    print("5. Exit")
+    print("4. City Management")
+    print("5. Show Analytics")
+    print("6. Exit")
     print("**********************************")
 
 def cab_management_menu():
@@ -49,6 +50,65 @@ def booking_management_menu():
     print("2. End a trip")
     print("3. Back to main menu")
     print("*******************************")
+
+def city_management_menu(city_manager):
+    """
+    Display the city management menu options to the user.
+    """
+    while True:
+        print("\n*** City Management Menu ***")
+        print("1. Add a city")
+        print("2. Get all cabs in a city by ID")
+        print("3. Get all cabs with a given state in a city by ID")
+        print("4. Remove a city")
+        print("5. Back to main menu")
+        choice = input("Select an option (1-5): ").strip()
+
+        try:
+            if choice == '1':
+                city_id = int(input("Enter the new city ID: ").strip())
+                name = input("Enter the name of the city: ").strip()
+                city_manager.addCity(city_id, name)
+                logger.info(f"Added city {name} with ID {city_id}.")
+
+            elif choice == '2':
+                city_id = int(input("Enter the city ID: ").strip())
+                cabs = city_manager.getAllCabsInCity(city_id)
+                if cabs:
+                    city = city_manager.getCity(city_id)
+                    logger.info(f"Cabs in city {city.name}:")
+                    for cab in cabs:
+                        logger.info(f" - Cab ID: {cab.cabId}, State: {cab.state}")
+                else:
+                    logger.info(f"No cabs available in city with ID {city_id}.")
+
+            elif choice == '3':
+                city_id = int(input("Enter the city ID: ").strip())
+                state = input("Enter the state to filter cabs (IDLE/ON_TRIP): ").strip().upper()
+                cabs = city_manager.getCabsInCityByState(city_id, state)
+                city = city_manager.getCity(city_id)
+                if cabs:
+                    logger.info(f"Cabs in city {city.name} with state {state}:")
+                    for cab in cabs:
+                        logger.info(f" - Cab ID: {cab.cabId}")
+                else:
+                    logger.info(f"No cabs with state {state} in city with ID {city_id}.")
+
+            elif choice == '4':
+                city_id = int(input("Enter the city ID to remove: ").strip())
+                if city_manager.getAllCabsInCity(city_id):
+                    logger.warning(f"Cannot remove city with ID {city_id} as it has cabs associated with it.")
+                else:
+                    city_manager.removeCity(city_id)
+                    logger.info(f"Removed city with ID {city_id}.")
+
+            elif choice == '5':
+                break
+
+            else:
+                logger.warning("Invalid option selected. Please try again.")
+        except Exception as e:
+            logger.error(f"Error in city management menu: {e}")
 
 def load_data(file_path):
     """
@@ -226,73 +286,79 @@ def main():
 
         while True:
             display_menu()
-            choice = input("Select an option (1-5): ").strip()
+            choice = input("Select an option (1-6): ").strip()
 
-            if choice == '1':
-                file_path = input("Enter the path to the JSON file with initial data: ").strip()
-                load_initial_data(file_path)
-                logger.info("Initial data loaded successfully.")
+            try:
+                if choice == '1':
+                    file_path = input("Enter the path to the JSON file with initial data: ").strip()
+                    load_initial_data(file_path)
+                    logger.info("Initial data loaded successfully.")
 
-            elif choice == '2':
-                while True:
-                    cab_management_menu()
-                    cab_choice = input("Select an option (1-5): ").strip()
+                elif choice == '2':
+                    while True:
+                        cab_management_menu()
+                        cab_choice = input("Select an option (1-5): ").strip()
 
-                    if cab_choice == '1':
-                        cab_id = int(input("Enter the cab ID to register: ").strip())
-                        city_id = int(input("Enter the city ID where the cab will be registered: ").strip())
-                        cab_manager.registerCab(cab_id, city_id)
-                        logger.info(f"Registered cab {cab_id} in city {city_id}.")
+                        if cab_choice == '1':
+                            cab_id = int(input("Enter the cab ID to register: ").strip())
+                            city_id = int(input("Enter the city ID where the cab will be registered: ").strip())
+                            cab_manager.registerCab(cab_id, city_id)
+                            logger.info(f"Registered cab {cab_id} in city {city_id}.")
 
-                    elif cab_choice == '2':
-                        cab_id = int(input("Enter the cab ID to update: ").strip())
-                        state = input("Enter the new state for the cab (IDLE/ON_TRIP): ").strip().upper()
-                        city_id = input("Enter the new city ID for the cab (optional): ").strip()
-                        city_id = int(city_id) if city_id else None
-                        update_cabs(cab_manager, cab_id, state, city_id)
+                        elif cab_choice == '2':
+                            cab_id = int(input("Enter the cab ID to update: ").strip())
+                            state = input("Enter the new state for the cab (IDLE/ON_TRIP): ").strip().upper()
+                            city_id = input("Enter the new city ID for the cab (optional): ").strip()
+                            city_id = int(city_id) if city_id else None
+                            update_cabs(cab_manager, cab_id, state, city_id)
 
-                    elif cab_choice == '3':
-                        cab_id = int(input("Enter the cab ID to show booking history: ").strip())
-                        show_cab_booking_history(cab_manager, cab_id)
+                        elif cab_choice == '3':
+                            cab_id = int(input("Enter the cab ID to show booking history: ").strip())
+                            show_cab_booking_history(cab_manager, cab_id)
 
-                    elif cab_choice == '4':
-                        cab_id = int(input("Enter the cab ID to show state change history: ").strip())
-                        show_cab_state_change_history(cab_manager, cab_id)
+                        elif cab_choice == '4':
+                            cab_id = int(input("Enter the cab ID to show state change history: ").strip())
+                            show_cab_state_change_history(cab_manager, cab_id)
 
-                    elif cab_choice == '5':
-                        break
+                        elif cab_choice == '5':
+                            break
 
-                    else:
-                        logger.warning("Invalid option selected. Please try again.")
+                        else:
+                            logger.warning("Invalid option selected. Please try again.")
 
-            elif choice == '3':
-                while True:
-                    booking_management_menu()
-                    booking_choice = input("Select an option (1-3): ").strip()
+                elif choice == '3':
+                    while True:
+                        booking_management_menu()
+                        booking_choice = input("Select an option (1-3): ").strip()
 
-                    if booking_choice == '1':
-                        city_id = int(input("Enter the city ID where you want to book a cab: ").strip())
-                        book_cab(booking_manager, city_id)
+                        if booking_choice == '1':
+                            city_id = int(input("Enter the city ID where you want to book a cab: ").strip())
+                            book_cab(booking_manager, city_id)
 
-                    elif booking_choice == '2':
-                        booking_id = int(input("Enter the booking ID to end the trip: ").strip())
-                        end_trip(booking_manager, booking_id)
+                        elif booking_choice == '2':
+                            booking_id = int(input("Enter the booking ID to end the trip: ").strip())
+                            end_trip(booking_manager, booking_id)
 
-                    elif booking_choice == '3':
-                        break
+                        elif booking_choice == '3':
+                            break
 
-                    else:
-                        logger.warning("Invalid option selected. Please try again.")
+                        else:
+                            logger.warning("Invalid option selected. Please try again.")
 
-            elif choice == '4':
-                show_analytics(cab_manager, city_manager)
+                elif choice == '4':
+                    city_management_menu(city_manager)
 
-            elif choice == '5':
-                logger.info("Exiting the program.")
-                break
+                elif choice == '5':
+                    show_analytics(cab_manager, city_manager)
 
-            else:
-                logger.warning("Invalid option selected. Please try again.")
+                elif choice == '6':
+                    logger.info("Exiting the program.")
+                    break
+
+                else:
+                    logger.warning("Invalid option selected. Please try again.")
+            except Exception as e:
+                logger.error(f"Error in main menu: {e}")
     except Exception as e:
         logger.error(f"An error occurred in the main function: {e}")
 

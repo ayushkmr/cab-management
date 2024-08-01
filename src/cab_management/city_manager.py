@@ -3,6 +3,7 @@ City Manager Module
 """
 
 from .city import City
+import logging
 
 class CityManager:
     """
@@ -20,6 +21,7 @@ class CityManager:
         else:
             CityManager._instance = self
             self.cities = {}  # cityId -> City object
+            logging.info("CityManager instance created.")
 
     @staticmethod
     def getInstance():
@@ -31,6 +33,7 @@ class CityManager:
         """
         if CityManager._instance is None:
             CityManager()
+            logging.info("CityManager instance created through getInstance.")
         return CityManager._instance
 
     def addCity(self, cityId, name):
@@ -42,6 +45,7 @@ class CityManager:
             name (str): Name of the city.
         """
         self.cities[cityId] = City(cityId, name)
+        logging.info(f"City added: ID={cityId}, Name={name}")
 
     def getCity(self, cityId):
         """
@@ -53,7 +57,12 @@ class CityManager:
         Returns:
             City: The city object corresponding to the cityId.
         """
-        return self.cities.get(cityId)
+        city = self.cities.get(cityId)
+        if city:
+            logging.info(f"Retrieved city: ID={cityId}, Name={city.name}")
+        else:
+            logging.warning(f"City with ID={cityId} not found.")
+        return city
     
     def getAllCities(self):
         """
@@ -62,7 +71,9 @@ class CityManager:
         Returns:
             list: List of all city objects.
         """
-        return list(self.cities.values())
+        cities = list(self.cities.values())
+        logging.info(f"Retrieved all cities: Count={len(cities)}")
+        return cities
 
     def addCabToCity(self, cab):
         """
@@ -74,6 +85,9 @@ class CityManager:
         city = self.getCity(cab.cityId)
         if city:
             city.addCab(cab)
+            logging.info(f"Cab added to city: Cab ID={cab.cabId}, City ID={cab.cityId}")
+        else:
+            logging.warning(f"Cannot add cab to city: City ID={cab.cityId} not found.")
     
     def removeCabFromCity(self, cab):
         """
@@ -85,6 +99,9 @@ class CityManager:
         city = self.getCity(cab.cityId)
         if city:
             city.removeCab(cab.cabId)
+            logging.info(f"Cab removed from city: Cab ID={cab.cabId}, City ID={cab.cityId}")
+        else:
+            logging.warning(f"Cannot remove cab from city: City ID={cab.cityId} not found.")
 
     def getAllCabsInCity(self, cityId):
         """
@@ -97,7 +114,9 @@ class CityManager:
             list: List of all cabs in the city.
         """
         city = self.getCity(cityId)
-        return city.getAllCabs() if city else []
+        cabs = city.getCabs() if city else []
+        logging.info(f"Retrieved all cabs in city: City ID={cityId}, Count={len(cabs)}")
+        return cabs
     
     def getCabsInCityByState(self, cityId, state):
         """
@@ -111,4 +130,24 @@ class CityManager:
             list: List of cabs in the city with the given state.
         """
         city = self.getCity(cityId)
-        return city.getCabsByState(state) if city else []
+        cabs = city.getCabsByState(state) if city else []
+        logging.info(f"Retrieved cabs in city by state: City ID={cityId}, State={state}, Count={len(cabs)}")
+        return cabs
+
+    def removeCity(self, cityId):
+        """
+        Remove a city if it has no associated cabs.
+        
+        Args:
+            cityId (int): The ID of the city to be removed.
+        
+        Returns:
+            bool: True if the city was removed, False otherwise.
+        """
+        city = self.getCity(cityId)
+        if city and not city.getCabs():
+            del self.cities[cityId]
+            logging.info(f"City with ID {cityId} has been removed.")
+            return True
+        logging.warning(f"City with ID {cityId} cannot be removed as it has associated cabs.")
+        return False
