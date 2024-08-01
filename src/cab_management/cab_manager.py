@@ -4,7 +4,7 @@ Cab Manager Module
 
 import logging
 from .cab import Cab
-from .state_manager import StateManager
+from .cab import CabState
 from .booking_manager import BookingManager
 
 class CabManager:
@@ -53,7 +53,7 @@ class CabManager:
         
         Args:
             cabId (int): Unique identifier for the cab.
-            state (str, optional): The new state of the cab.
+            state (CabState, optional): The new state of the cab.
             cityId (int, optional): The new city ID of the cab.
         """
         if cabId in self.cabs:
@@ -75,7 +75,6 @@ class CabManager:
         """
         return self.cabs.get(cabId)
 
-
     def getAllBookings(self):
         """
         Get all bookings for cabs.
@@ -84,4 +83,3 @@ class CabManager:
             list: List of all bookings.
         """
         return BookingManager.getInstance().getAllBookings()
-

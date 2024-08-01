@@ -4,8 +4,12 @@ Cab Module
 
 from datetime import datetime
 import logging
-from .state_manager import StateManager
-from .city import City
+from enum import Enum
+
+class CabState(Enum):
+    IDLE = "IDLE"
+    RESERVED = "RESERVED"
+    ON_TRIP = "ON_TRIP"
 
 class Cab:
     """
@@ -14,26 +18,34 @@ class Cab:
     Attributes:
         cabId (int): Unique identifier for the cab.
         cityId (int): Current city ID of the cab.
-        state (State): Current state of the cab.
+        state (CabState): Current state of the cab.
         history (list): List of tuples containing the timestamp and state.
     """
     def __init__(self, cabId, cityId):
         self.cabId = cabId
         self.cityId = cityId
-        self.state = StateManager.getState("IDLE")
+        self.state = CabState.IDLE
         self.history = [(datetime.now(), self.state)]
-        logging.info(f"Cab {self.cabId} initialized in city ID {self.cityId} with state {self.state.__class__.__name__}")
+        logging.info(f"Cab {self.cabId} initialized in city ID {self.cityId} with state {self.state}")
 
     def setState(self, state):
         """
         Set the state of the cab and record the timestamp.
         
         Args:
-            state (str): The new state of the cab.
+            state (Union[CabState, str]): The new state of the cab, can be a CabState or a string.
         """
-        self.state = StateManager.getState(state)
+        if isinstance(state, str):
+            try:
+                state = CabState[state]  # Convert string to CabState
+            except KeyError:
+                raise ValueError(f"Invalid state string: {state}")
+        elif not isinstance(state, CabState):
+            raise ValueError(f"Invalid state: {state}")
+        
+        self.state = state
         self.history.append((datetime.now(), self.state))
-        logging.info(f"Cab {self.cabId} state changed to {self.state.__class__.__name__}")
+        logging.info(f"Cab {self.cabId} state changed to {self.state}")
 
     def setCity(self, cityId):
         """
@@ -50,7 +62,7 @@ class Cab:
         Get the current state of the cab.
         
         Returns:
-            State: The current state of the cab.
+            CabState: The current state of the cab.
         """
         return self.state
 
