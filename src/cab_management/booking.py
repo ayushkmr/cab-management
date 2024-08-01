@@ -64,3 +64,48 @@ class Booking:
         if not isinstance(new_state, BookingState):
             raise ValueError(f"Invalid state: {new_state}")
         self.state = new_state
+
+    def getCity(self):
+        """
+        Get the city associated with the booking.
+        
+        Returns:
+            City: The city object associated with the booking.
+        """
+        return self.city
+
+    def getCab(self):
+        """
+        Get the cab associated with the booking.
+        
+        Returns:
+            Cab: The cab object associated with the booking.
+        """
+        return self.cab
+
+    def getState(self):
+        """
+        Get the current state of the booking.
+        
+        Returns:
+            BookingState: The current state of the booking.
+        """
+        return self.state
+
+    def getStartTime(self):
+        """
+        Get the start time of the booking.
+        
+        Returns:
+            datetime: The start time of the booking.
+        """
+        return self.start_time
+
+    def getEndTime(self):
+        """
+        Get the end time of the booking.
+        
+        Returns:
+            datetime: The end time of the booking.
+        """
+        return self.end_time

@@ -89,12 +89,19 @@ class Analytics:
         time_demand = {}
 
         for booking in bookings:
-            city = booking.city
+            city = booking.getCity()
             try:
-                booking_time = datetime.fromisoformat(booking.start_time).hour
+                booking_time = datetime.fromisoformat(booking.getStartTime()).hour
             except ValueError as e:
                 logger.error(f"Error parsing booking start time: {e}")
                 continue
+            except TypeError:
+                booking_time = booking.getStartTime()
+                if isinstance(booking_time, datetime):
+                    booking_time = booking_time.hour
+                else:
+                    logger.error(f"Invalid start time type: {type(booking_time)} for booking ID: {booking.bookingId}")
+                    continue
 
             if city not in city_demand:
                 city_demand[city] = 0
@@ -108,4 +115,4 @@ class Analytics:
         peak_time = max(time_demand, key=time_demand.get)
 
         logger.info(f"High demand city: {high_demand_city.name}, Peak time: {peak_time}")
-        return high_demand_city, peak_time
+        return high_demand_city.name, peak_time
