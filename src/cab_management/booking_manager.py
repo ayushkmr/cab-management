@@ -62,6 +62,9 @@ class BookingManager:
             logger.warning(f"No idle cabs available in city {city}")
             return None
         
+        for cab in cabs:
+            idle_time = cab.getIdleTime()
+            logger.info(f"Cab ID: {cab.cabId}, Idle Time: {idle_time} seconds")
         # Sort cabs based on idle time
         cabs.sort(key=lambda cab: cab.getIdleTime(), reverse=True)
         
@@ -91,8 +94,17 @@ class BookingManager:
         """
         logger.info(f"Booking {booking.bookingId} added for cab {booking.cab.cabId} in city {booking.city.cityId} at {booking.start_time}")
         self.bookings[booking.bookingId] = booking
-        
 
+    def getBookings(self):
+        """
+        Get the bookings dictionary.
+        
+        Returns:
+            dict: Dictionary of bookings with booking ID as key and booking object as value.
+        """
+        logger.info("Fetching bookings")
+        return self.bookings
+        
     def getAllBookings(self):
         """
         Get all bookings.
@@ -165,6 +177,49 @@ class BookingManager:
             logger.info(f"Cab {best_cab.cabId} state changed to ON_TRIP")
             
             # Step 6: Return the booking ID
+            logger.info("Transaction completed successfully")
+            return booking.bookingId
+
+        except Exception as e:
+            logger.error(f"Transaction failed: {e}")
+            return None
+
+    def bookOldCab(self, cab, city, start_time=None):
+        """
+        Book an old cab using the specified cab ID.
+        
+        Args:
+            cab_id (int): The ID of the cab to be booked.
+            city (str): The city where the cab is needed.
+            start_time (datetime, optional): The timestamp when the trip starts. If None, current time will be used.
+        
+        Returns:
+            int: The booking ID of the booked cab, or None if the cab is not available.
+        """
+        try:
+            # Start transaction
+            logger.info("Starting transaction for booking an old cab")
+            
+            # Step 1: Reserve the cab
+            cab.setState(CabState.RESERVED, start_time)  # Set state using the CabState enum
+            logger.info(f"Cab {cab.cabId} reserved")
+            
+            # Step 2: Create a booking for the cab
+            booking = Booking(cab, city, start_time=start_time)
+            self.addBooking(booking)  # Use the addBooking method to add the booking
+            cab.addBooking(booking.bookingId)  # Add booking to cab
+            logger.info(f"Booking created with ID {booking.bookingId} for cab {cab.cabId}")
+            
+            # Step 3: Change the state to WAITING_FOR_CUSTOMER
+            booking.change_state(BookingState.WAITING_FOR_CUSTOMER)
+            logger.info(f"Cab {cab.cabId} state changed to WAITING_FOR_CUSTOMER")
+            
+            # Step 4: Change the state to ON_TRIP
+            booking.change_state(BookingState.TRIP_STARTED)
+            cab.setState(CabState.ON_TRIP, start_time)  # Set state using the CabState enum
+            logger.info(f"Cab {cab.cabId} state changed to ON_TRIP")
+            
+            # Step 5: Return the booking ID
             logger.info("Transaction completed successfully")
             return booking.bookingId
 

@@ -37,8 +37,8 @@ class TestUtils(unittest.TestCase):
         result = end_trip_with_timestamp(booking_id)
         self.assertTrue(result, "Ending the trip should return True")
         # Assuming we can check the state of the booking after ending the trip
-        booking_manager = BookingManager.getInstance()
-        booking = booking_manager.bookings[booking_id]
+        bookings = BookingManager.getInstance().getBookings()
+        booking = bookings[booking_id]
         self.assertEqual(booking.state, BookingState.COMPLETED, "Booking should be completed after ending the trip")
         logger.info(f"Trip for booking ID {booking_id} ended successfully.")
 

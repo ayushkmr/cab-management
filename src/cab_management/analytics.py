@@ -45,7 +45,7 @@ class Analytics:
 
         logger.debug(f"Calculating idle time for cab {cab.cabId}")
         for time, state in cab.getHistory():
-            if state == CabState.IDLE:
+            if isinstance(time, datetime) and state == CabState.IDLE:
                 if previous_time < time <= end_time:
                     total_idle_time += time - previous_time
                 previous_time = time

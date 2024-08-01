@@ -126,15 +126,16 @@ class Cab:
         """
         total_idle_time = timedelta(0)
         current_time = datetime.now()
-        previous_time = self.history[0][0]
+        previous_time = None  # Initialize previous_time to None
 
         logging.debug(f"Calculating idle time for cab {self.cabId}")
         for timestamp, state in self.history:
-            if state == CabState.IDLE:
-                total_idle_time += timestamp - previous_time
-            previous_time = timestamp
+            if isinstance(timestamp, datetime):
+                if previous_time is not None and state == CabState.IDLE:
+                    total_idle_time += timestamp - previous_time
+                previous_time = timestamp
         
-        if self.state == CabState.IDLE:
+        if self.state == CabState.IDLE and previous_time is not None:
             total_idle_time += current_time - previous_time
         
         idle_time_seconds = int(total_idle_time.total_seconds())

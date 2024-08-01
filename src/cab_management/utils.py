@@ -117,13 +117,13 @@ def add_old_booking(booking_manager, cab_manager, city_manager, cab_id, city_id,
     city = city_manager.getCity(city_id)
 
     if cab and city:
-        state = BookingState.COMPLETED if end_time else BookingState.TRIP_STARTED
-        booking = Booking(cab, city, state=state, start_time=start_time, end_time=end_time)
-        booking_manager.addBooking(booking)
+        booking_id = booking_manager.bookOldCab(cab, city, start_time)
         
-        cab.setState((CabState.IDLE if state == BookingState.COMPLETED else CabState.ON_TRIP), 
-                     end_time if end_time else start_time)
-        logger.info(f"Old booking {booking.bookingId} added for cab {cab_id} in city {city_id} from {start_time} to {end_time if end_time else 'ongoing'}")
+        if end_time:
+            booking_manager.endBooking(booking_id, end_time)
+            logger.info(f"Old booking {booking_id} for cab {cab_id} in city {city_id} ended at {end_time}.")
+        else:
+            logger.info(f"Old booking {booking_id} for cab {cab_id} in city {city_id} started at {start_time} and is ongoing.")
     else:
         logger.warning(f"Cab {cab_id} or city {city_id} not found. Cannot add old booking.")
 
