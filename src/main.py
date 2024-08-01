@@ -44,12 +44,14 @@ def analytics_menu(cab_manager):
         try:
             if choice == '1':
                 cab_id = int(input("Enter the cab ID to check idle time: ").strip())
-                start_time = datetime.fromisoformat(input("Enter the start time (YYYY-MM-DD HH:MM:SS): ").strip())
-                end_time = datetime.fromisoformat(input("Enter the end time (YYYY-MM-DD HH:MM:SS): ").strip())
+                start_time_input = input("Enter the start time (YYYY-MM-DD HH:MM:SS) or leave empty for minimum: ").strip()
+                start_time = datetime.fromisoformat(start_time_input) if start_time_input else datetime.min
+                end_time_input = input("Enter the end time (YYYY-MM-DD HH:MM:SS) or leave empty for now: ").strip()
+                end_time = datetime.fromisoformat(end_time_input) if end_time_input else datetime.now()
                 cab = cab_manager.getCab(cab_id)
                 if cab:
                     idle_time = Analytics.calculateIdleTime(cab, start_time, end_time)
-                    logger.info(f"Cab {cab_id} idle time between {start_time} and {end_time}: {idle_time} hours")
+                    logger.info(f"Cab {cab_id} idle time between {start_time} and {end_time}: {idle_time} seconds")
                 else:
                     logger.warning(f"Cab {cab_id} not found.")
 
@@ -290,36 +292,6 @@ def end_trip(booking_manager, booking_id):
         logger.error(e)
     except Exception as e:
         logger.error(f"Error ending trip for booking ID {booking_id}: {e}")
-
-def show_analytics(cab_manager, city_manager):
-    """
-    Show analytics for cabs.
-    
-    Args:
-        cab_manager (CabManager): The CabManager instance.
-        city_manager (CityManager): The CityManager instance.
-    """
-    try:
-        cabs = cab_manager.cabs.values()
-        for cab in cabs:
-            idle_time = Analytics.calculateIdleTime(cab, datetime.min, datetime.now())
-            logger.info(f"Cab {cab.cabId} idle time: {idle_time}")
-            history = Analytics.getCabHistory(cab)
-            logger.info(f"Cab {cab.cabId} history: {history}")
-
-        # Dummy booking data to demonstrate the highDemandCities function
-        bookings = cab_manager.getAllBookings()
-        high_demand_city, peak_time = Analytics.highDemandCities(bookings)
-        logger.info(f"High demand city: {high_demand_city}, Peak time: {peak_time}")
-
-        # Show available cabs in each city
-        cities = city_manager.getAllCities()
-        for city in cities:
-            idle_cabs = [cab for cab in cabs if cab.cityId == city.cityId and cab.state == "IDLE"]
-            on_trip_cabs = [cab for cab in cabs if cab.cityId == city.cityId and cab.state == "ON_TRIP"]
-            logger.info(f"City: {city.name}, Idle Cabs: {len(idle_cabs)}, On Trip Cabs: {len(on_trip_cabs)}")
-    except Exception as e:
-        logger.error(f"Error showing analytics: {e}")
 
 def main():
     """

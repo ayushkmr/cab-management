@@ -24,17 +24,23 @@ class Analytics:
             end_time (datetime): The end time of the period to calculate idle time.
         
         Returns:
-            float: The total idle time in hours.
+            int: The total idle time in seconds.
         """
-        if start_time is None:
-            start_time = datetime.min
-            logger.warning("Start time is None, setting it to datetime.min")
+        if start_time is None or start_time == datetime.min:
+            # If start_time is None or minimum, start from the first recorded time in history
+            history = cab.getHistory()
+            if history:
+                start_time = history[0][0]
+                logger.warning("Start time is None or minimum, setting it to the first recorded time in history.")
+            else:
+                logger.warning("No history available, setting start_time to datetime.min.")
+                start_time = datetime.min
+
         if end_time is None:
             end_time = datetime.now()
             logger.warning("End time is None, setting it to datetime.now()")
 
         total_idle_time = timedelta(0)
-        current_time = datetime.now()
         previous_time = start_time
 
         logger.debug(f"Calculating idle time for cab {cab.cabId}")
@@ -47,9 +53,9 @@ class Analytics:
         if previous_time < end_time and cab.getState() == CabState.IDLE:
             total_idle_time += end_time - previous_time
         
-        idle_time_hours = total_idle_time.total_seconds() / 3600.0
-        logger.info(f"Calculated idle time for cab {cab.cabId}: {idle_time_hours} hours")
-        return idle_time_hours
+        idle_time_seconds = int(total_idle_time.total_seconds())
+        logger.info(f"Calculated idle time for cab {cab.cabId}: {idle_time_seconds} seconds")
+        return idle_time_seconds
 
     @staticmethod
     def getCabHistory(cab):
@@ -84,7 +90,11 @@ class Analytics:
 
         for booking in bookings:
             city = booking.city
-            booking_time = datetime.fromisoformat(booking.start_time).hour
+            try:
+                booking_time = datetime.fromisoformat(booking.start_time).hour
+            except ValueError as e:
+                logger.error(f"Error parsing booking start time: {e}")
+                continue
 
             if city not in city_demand:
                 city_demand[city] = 0
@@ -97,5 +107,5 @@ class Analytics:
         high_demand_city = max(city_demand, key=city_demand.get)
         peak_time = max(time_demand, key=time_demand.get)
 
-        logger.info(f"High demand city: {high_demand_city}, Peak time: {peak_time}")
+        logger.info(f"High demand city: {high_demand_city.name}, Peak time: {peak_time}")
         return high_demand_city, peak_time
