@@ -3,7 +3,9 @@ Booking Manager Module
 """
 
 import logging
+
 from datetime import datetime
+import random
 from .booking import Booking, BookingState
 from .city_manager import CityManager
 from .cab import CabState
@@ -59,8 +61,25 @@ class BookingManager:
         if not cabs:
             logger.warning(f"No idle cabs available in city {city}")
             return None
-        cabs.sort(key=lambda cab: sum(1 for time, state in cab.getHistory() if state == CabState.IDLE), reverse=True)
-        selected_cab = cabs[0] if cabs else None
+        
+        # Sort cabs based on idle time
+        cabs.sort(key=lambda cab: cab.getIdleTime(), reverse=True)
+        
+        for cab in cabs:
+            idle_time = cab.getIdleTime()
+            logger.info(f"Cab ID: {cab.cabId}, Idle Time: {idle_time} seconds")
+            
+        # If there are multiple cabs with the same idle time, randomly select one
+        max_idle_time = cabs[0].getIdleTime()
+        best_cabs = [cab for cab in cabs if cab.getIdleTime() == max_idle_time]
+        
+        if best_cabs:
+            selected_cab = random.choice(best_cabs)
+            logger.info(f"Selected cab {selected_cab.cabId} from best cabs")
+        else:
+            selected_cab = None
+            logger.warning("No cabs were selected as best cabs list is empty")
+        
         return selected_cab
 
     def addBooking(self, booking):
@@ -96,7 +115,7 @@ class BookingManager:
         if booking_id in self.bookings:
             booking = self.bookings[booking_id]
             cab = booking.cab
-            cab.setState(CabState.IDLE)  # Set state using the CabState enum
+            cab.setState(CabState.IDLE, end_time)  # Set state using the CabState enum
             booking.change_state(BookingState.COMPLETED)
             booking.end_time = end_time if end_time else datetime.now()
             logger.info(f"Booking with ID {booking_id} ended at {booking.end_time} and cab {cab.cabId} set to IDLE")
@@ -126,7 +145,7 @@ class BookingManager:
                 return None
             
             # Step 2: Reserve the cab
-            best_cab.setState(CabState.RESERVED)  # Set state using the CabState enum
+            best_cab.setState(CabState.RESERVED, start_time)  # Set state using the CabState enum
             logger.info(f"Cab {best_cab.cabId} reserved")
             
             # Step 3: Create a booking for the cab
@@ -141,7 +160,7 @@ class BookingManager:
             
             # Step 5: Change the state to ON_TRIP
             booking.change_state(BookingState.TRIP_STARTED)
-            best_cab.setState(CabState.ON_TRIP)  # Set state using the CabState enum
+            best_cab.setState(CabState.ON_TRIP, start_time)  # Set state using the CabState enum
             logger.info(f"Cab {best_cab.cabId} state changed to ON_TRIP")
             
             # Step 6: Return the booking ID

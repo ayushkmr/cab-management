@@ -2,7 +2,7 @@
 Cab Module
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from enum import Enum
 
@@ -30,12 +30,13 @@ class Cab:
         self.bookings = []  # List to store booking IDs
         logging.info(f"Cab {self.cabId} initialized in city ID {self.cityId} with state {self.state}")
 
-    def setState(self, state):
+    def setState(self, state, timestamp=None):
         """
         Set the state of the cab and record the timestamp.
         
         Args:
             state (Union[CabState, str]): The new state of the cab, can be a CabState or a string.
+            timestamp (datetime, optional): The timestamp to record. If None, the current time will be used.
         """
         if isinstance(state, str):
             try:
@@ -47,7 +48,9 @@ class Cab:
         
         if self.state != state:  # Only change state if it's different
             self.state = state
-            self.history.append((datetime.now(), self.state))
+            if timestamp is None:
+                timestamp = datetime.now()  # Use current time if no timestamp is provided
+            self.history.append((timestamp, self.state))
             logging.info(f"Cab {self.cabId} state changed to {self.state}")
 
     def setCity(self, cityId):
@@ -105,3 +108,24 @@ class Cab:
             list: List of booking IDs.
         """
         return self.bookings
+
+    def getIdleTime(self):
+        """
+        Calculate the total idle time of the cab.
+        
+        Returns:
+            int: The total idle time in seconds.
+        """
+        total_idle_time = timedelta(0)
+        current_time = datetime.now()
+        previous_time = self.history[0][0]
+
+        for timestamp, state in self.history:
+            if state == CabState.IDLE:
+                total_idle_time += timestamp - previous_time
+            previous_time = timestamp
+        
+        if self.state == CabState.IDLE:
+            total_idle_time += current_time - previous_time
+        
+        return int(total_idle_time.total_seconds())
