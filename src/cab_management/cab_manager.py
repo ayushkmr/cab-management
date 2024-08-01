@@ -6,6 +6,7 @@ import logging
 from .cab import Cab
 from .cab import CabState
 from .booking_manager import BookingManager
+from .city_manager import CityManager
 
 class CabManager:
     """
@@ -23,6 +24,7 @@ class CabManager:
         else:
             CabManager._instance = self
             self.cabs = {}  # cabId -> Cab object
+            self.cityManager = CityManager.getInstance()
 
     @staticmethod
     def getInstance():
@@ -44,7 +46,9 @@ class CabManager:
             cabId (int): Unique identifier for the cab.
             cityId (int): Initial city ID of the cab.
         """
-        self.cabs[cabId] = Cab(cabId, cityId)
+        cab = Cab(cabId, cityId)
+        self.cabs[cabId] = cab
+        self.cityManager.addCabToCity(cab)
         logging.info(f"Cab {cabId} registered in city ID {cityId}")
 
     def updateCab(self, cabId, state=None, cityId=None):
@@ -57,10 +61,13 @@ class CabManager:
             cityId (int, optional): The new city ID of the cab.
         """
         if cabId in self.cabs:
+            cab = self.cabs[cabId]
             if state:
-                self.cabs[cabId].setState(state)
-            if cityId:
-                self.cabs[cabId].setCity(cityId)
+                cab.setState(state)
+            if cityId and cityId != cab.cityId:
+                self.cityManager.removeCabFromCity(cab)
+                cab.setCity(cityId)
+                self.cityManager.addCabToCity(cab)
             logging.info(f"Cab {cabId} updated with state {state} and city ID {cityId}")
 
     def getCab(self, cabId):

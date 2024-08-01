@@ -5,6 +5,8 @@ Booking Manager Module
 import logging
 from datetime import datetime
 from .booking import Booking, BookingState
+from .city_manager import CityManager
+from .cab import CabState
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -41,28 +43,26 @@ class BookingManager:
         return BookingManager._instance
     
     @staticmethod
-    def findBestCab(cabs, city):
+    def findBestCab(city):
         """
         Find the best available cab in the given city.
         
         Args:
-            cabs (dict): Dictionary of cabs.
             city (str): The city where the cab is needed.
         
         Returns:
             Cab: The best available cab object, or None if no cabs are available.
         """
         logger.info(f"Finding best cab in city {city}")
-        idleCabs = [cab for cab in cabs.values() if cab.getCity() == city and cab.getState().__class__.__name__ == "IdleState"]
-        if not idleCabs:
+        cabs = CityManager.getInstance().getCabsInCityByState(city, CabState.IDLE)  # Get idle cabs directly from CityManager
+        logger.info(f"Available cabs in city {city}: {[cab.cabId for cab in cabs]}")
+        if not cabs:
             logger.warning(f"No idle cabs available in city {city}")
             return None
-        idleCabs.sort(key=lambda cab: sum(1 for time, state in cab.getHistory() if state.__class__.__name__ == "IdleState"), reverse=True)
-        selected_cab = idleCabs[0] if idleCabs else None
-        if selected_cab:
-            selected_cab.setState("ON_TRIP")
-            logger.info(f"Selected cab {selected_cab.cabId} for booking in city {city}")
+        cabs.sort(key=lambda cab: sum(1 for time, state in cab.getHistory() if state == CabState.IDLE), reverse=True)
+        selected_cab = cabs[0] if cabs else None
         return selected_cab
+
     def addBooking(self, booking):
         """
         Add a booking to the bookings dictionary.
@@ -96,7 +96,7 @@ class BookingManager:
         if booking_id in self.bookings:
             booking = self.bookings[booking_id]
             cab = booking.cab
-            cab.setState("IDLE")
+            cab.setState(CabState.IDLE)  # Set state using the CabState enum
             booking.change_state(BookingState.COMPLETED)
             booking.end_time = end_time if end_time else datetime.now()
             logger.info(f"Booking with ID {booking_id} ended at {booking.end_time} and cab {cab.cabId} set to IDLE")
@@ -104,12 +104,11 @@ class BookingManager:
             logger.error(f"Booking ID {booking_id} not found.")
             raise ValueError(f"Booking ID {booking_id} not found.")
 
-    def bookCab(self, cabs, city, start_time=None):
+    def bookCab(self, city, start_time=None):
         """
         Book a cab in the specified city.
         
         Args:
-            cabs (dict): Dictionary of cabs.
             city (str): The city where the cab is needed.
             start_time (datetime, optional): The timestamp when the trip starts. If None, current time will be used.
         
@@ -121,18 +120,19 @@ class BookingManager:
             logger.info("Starting transaction for booking a cab")
 
             # Step 1: Find the best available cab
-            best_cab = self.findBestCab(cabs, city)
+            best_cab = self.findBestCab(city)
             if not best_cab:
                 logger.warning("No cabs available for booking")
                 return None
             
             # Step 2: Reserve the cab
-            best_cab.setState("RESERVED")
+            best_cab.setState(CabState.RESERVED)  # Set state using the CabState enum
             logger.info(f"Cab {best_cab.cabId} reserved")
             
             # Step 3: Create a booking for the cab
             booking = Booking(best_cab, city, start_time=start_time)
-            self.bookings[booking.bookingId] = booking
+            self.addBooking(booking)  # Use the addBooking method to add the booking
+            best_cab.addBooking(booking.bookingId)  # Add booking to cab
             logger.info(f"Booking created with ID {booking.bookingId} for cab {best_cab.cabId}")
             
             # Step 4: Change the state to WAITING_FOR_CUSTOMER
@@ -141,7 +141,7 @@ class BookingManager:
             
             # Step 5: Change the state to ON_TRIP
             booking.change_state(BookingState.TRIP_STARTED)
-            best_cab.setState("ON_TRIP")
+            best_cab.setState(CabState.ON_TRIP)  # Set state using the CabState enum
             logger.info(f"Cab {best_cab.cabId} state changed to ON_TRIP")
             
             # Step 6: Return the booking ID

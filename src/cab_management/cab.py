@@ -20,12 +20,14 @@ class Cab:
         cityId (int): Current city ID of the cab.
         state (CabState): Current state of the cab.
         history (list): List of tuples containing the timestamp and state.
+        bookings (list): List of booking IDs associated with the cab.
     """
     def __init__(self, cabId, cityId):
         self.cabId = cabId
         self.cityId = cityId
         self.state = CabState.IDLE
         self.history = [(datetime.now(), self.state)]
+        self.bookings = []  # List to store booking IDs
         logging.info(f"Cab {self.cabId} initialized in city ID {self.cityId} with state {self.state}")
 
     def setState(self, state):
@@ -83,3 +85,22 @@ class Cab:
             list: List of tuples containing the timestamp and state.
         """
         return self.history
+
+    def addBooking(self, bookingId):
+        """
+        Add a booking ID to the cab's booking history.
+        
+        Args:
+            bookingId (int): The ID of the booking to add.
+        """
+        self.bookings.append(bookingId)
+        logging.info(f"Booking {bookingId} added to cab {self.cabId}")
+
+    def getBookings(self):
+        """
+        Get the list of booking IDs associated with the cab.
+        
+        Returns:
+            list: List of booking IDs.
+        """
+        return self.bookings

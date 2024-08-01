@@ -4,6 +4,8 @@ Booking Module
 
 from datetime import datetime
 from enum import Enum
+from .city import City
+from .city_manager import CityManager
 
 class BookingState(Enum):
     BOOKED = "BOOKED"
@@ -35,7 +37,19 @@ class Booking:
     def __init__(self, cab, city, state=BookingState.BOOKED, start_time=None, end_time=None):
         self.bookingId = Booking._get_next_booking_id()
         self.cab = cab
-        self.city = city
+        
+        # Check if city is an instance of City or an integer
+        if isinstance(city, City):
+            self.city = city
+        elif isinstance(city, int):
+            city_manager = CityManager.getInstance()
+            city_obj = city_manager.getCity(city)  # Get the city object using city_id
+            if city_obj is None:
+                raise ValueError(f"Invalid city ID: {city}")
+            self.city = city_obj
+        else:
+            raise ValueError(f"Invalid city type: {type(city)}. Must be City object or city ID (int).")
+        
         self.state = state
         self.start_time = start_time if start_time else datetime.now()
         self.end_time = end_time

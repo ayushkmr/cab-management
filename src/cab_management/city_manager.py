@@ -63,3 +63,52 @@ class CityManager:
             list: List of all city objects.
         """
         return list(self.cities.values())
+
+    def addCabToCity(self, cab):
+        """
+        Add a cab to the corresponding city.
+        
+        Args:
+            cab (Cab): The cab object to be added.
+        """
+        city = self.getCity(cab.cityId)
+        if city:
+            city.addCab(cab)
+    
+    def removeCabFromCity(self, cab):
+        """
+        Remove a cab from the corresponding city.
+        
+        Args:
+            cab (Cab): The cab object to be removed.
+        """
+        city = self.getCity(cab.cityId)
+        if city:
+            city.removeCab(cab.cabId)
+
+    def getAllCabsInCity(self, cityId):
+        """
+        Get all cabs in a given city.
+        
+        Args:
+            cityId (int): The ID of the city.
+        
+        Returns:
+            list: List of all cabs in the city.
+        """
+        city = self.getCity(cityId)
+        return city.getAllCabs() if city else []
+    
+    def getCabsInCityByState(self, cityId, state):
+        """
+        Get all cabs in a given city with a specific state.
+        
+        Args:
+            cityId (int): The ID of the city.
+            state (CabState): The state to filter cabs by.
+        
+        Returns:
+            list: List of cabs in the city with the given state.
+        """
+        city = self.getCity(cityId)
+        return city.getCabsByState(state) if city else []
